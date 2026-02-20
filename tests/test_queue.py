@@ -80,6 +80,9 @@ class TestQueueStatus:
         assert items[0]["title"] == "Ep 1"
         assert items[0]["status"] == "pending"
         assert items[0]["error"] is None
+        assert items[0]["started_at"] is None
+        assert items[0]["completed_at"] is None
+        assert items[0]["step_detail"] == ""
 
 
 class TestQueueClear:
@@ -115,6 +118,45 @@ class TestQueueClear:
         assert remaining[0]["title"] == "Pending"
 
 
+class TestQueueShowContext:
+    def test_show_context_passes_through(self, client):
+        import app as app_module
+
+        with patch("app._start_worker"):
+            resp = client.post(
+                "/queue/add",
+                json={
+                    "episodes": [{"title": "Ep 1", "audio_url": "https://example.com/ep1.mp3"}],
+                    "model_size": "base",
+                    "show_context": {"show_name": "Test Show", "hosts": ["Alice"]},
+                },
+            )
+
+        assert resp.status_code == 200
+        job_id = resp.json()["queued"][0]["job_id"]
+
+        with app_module._queue_lock:
+            item = app_module._queue[job_id]
+            assert item.show_context == {"show_name": "Test Show", "hosts": ["Alice"]}
+
+    def test_show_context_defaults_to_none(self, client):
+        import app as app_module
+
+        with patch("app._start_worker"):
+            resp = client.post(
+                "/queue/add",
+                json={
+                    "episodes": [{"title": "Ep 1", "audio_url": "https://example.com/ep1.mp3"}],
+                    "model_size": "base",
+                },
+            )
+
+        job_id = resp.json()["queued"][0]["job_id"]
+        with app_module._queue_lock:
+            item = app_module._queue[job_id]
+            assert item.show_context is None
+
+
 class TestProcessQueueItem:
     def test_successful_processing(self, client, mock_whisper, tmp_path, monkeypatch):
         import app as app_module
@@ -128,6 +170,7 @@ class TestProcessQueueItem:
             model_size="base",
             language=None,
         )
+        item.started_at = time.time()
 
         def fake_subprocess_run(cmd, **kwargs):
             output_template = cmd[cmd.index("--output") + 1]
@@ -139,6 +182,10 @@ class TestProcessQueueItem:
 
         assert item.status == "completed"
         assert (tmp_path / "test-job.json").exists()
+        assert item.started_at is not None
+        assert item.completed_at is not None
+        assert item.completed_at >= item.started_at
+        assert item.step_detail != ""
 
     def test_download_timeout(self, client, monkeypatch):
         import app as app_module
@@ -156,6 +203,8 @@ class TestProcessQueueItem:
 
         assert item.status == "failed"
         assert "timed out" in item.error
+        assert item.completed_at is not None
+        assert "timed out" in item.step_detail.lower()
 
     def test_download_failure(self, client, monkeypatch):
         import app as app_module
@@ -173,6 +222,8 @@ class TestProcessQueueItem:
 
         assert item.status == "failed"
         assert "Download failed" in item.error
+        assert item.completed_at is not None
+        assert item.step_detail != ""
 
     def test_no_audio_file_downloaded(self, client, monkeypatch):
         import app as app_module
@@ -190,3 +241,96 @@ class TestProcessQueueItem:
 
         assert item.status == "failed"
         assert "No audio file" in item.error
+        assert item.completed_at is not None
+        assert "audio file" in item.step_detail.lower()
+
+
+class TestAutoFormat:
+    def test_auto_format_called_when_api_key_set(self, client, mock_whisper, mock_anthropic, tmp_path, monkeypatch):
+        import app as app_module
+
+        monkeypatch.setattr(app_module, "TRANSCRIPTION_DIR", tmp_path)
+
+        item = app_module.QueueItem(
+            job_id="test-fmt",
+            title="Test Episode",
+            audio_url="https://example.com/ep.mp3",
+            model_size="base",
+            language=None,
+            show_context={"show_name": "My Show"},
+        )
+        item.started_at = time.time()
+
+        def fake_subprocess_run(cmd, **kwargs):
+            output_template = cmd[cmd.index("--output") + 1]
+            out_dir = Path(output_template).parent
+            (out_dir / "episode.mp3").write_bytes(b"\x00" * 100)
+
+        with patch("app.subprocess.run", side_effect=fake_subprocess_run), \
+             patch("formatter.get_anthropic_client", return_value=mock_anthropic):
+            app_module._process_queue_item(item)
+
+        assert item.status == "completed"
+        assert (tmp_path / "test-fmt.json").exists()
+        assert (tmp_path / "test-fmt.md").exists()
+        assert (tmp_path / "test-fmt.docx").exists()
+
+    def test_auto_format_skipped_when_no_api_key(self, client, mock_whisper, tmp_path, monkeypatch):
+        import app as app_module
+
+        monkeypatch.setattr(app_module, "TRANSCRIPTION_DIR", tmp_path)
+
+        item = app_module.QueueItem(
+            job_id="test-nofmt",
+            title="Test Episode",
+            audio_url="https://example.com/ep.mp3",
+            model_size="base",
+            language=None,
+        )
+        item.started_at = time.time()
+
+        def fake_subprocess_run(cmd, **kwargs):
+            output_template = cmd[cmd.index("--output") + 1]
+            out_dir = Path(output_template).parent
+            (out_dir / "episode.mp3").write_bytes(b"\x00" * 100)
+
+        with patch("app.subprocess.run", side_effect=fake_subprocess_run), \
+             patch("formatter.get_anthropic_client", return_value=None):
+            app_module._process_queue_item(item)
+
+        assert item.status == "completed"
+        assert (tmp_path / "test-nofmt.json").exists()
+        assert not (tmp_path / "test-nofmt.md").exists()
+
+    def test_auto_format_failure_doesnt_fail_transcription(self, client, mock_whisper, tmp_path, monkeypatch):
+        import app as app_module
+
+        monkeypatch.setattr(app_module, "TRANSCRIPTION_DIR", tmp_path)
+
+        item = app_module.QueueItem(
+            job_id="test-fmterr",
+            title="Test Episode",
+            audio_url="https://example.com/ep.mp3",
+            model_size="base",
+            language=None,
+        )
+        item.started_at = time.time()
+
+        def fake_subprocess_run(cmd, **kwargs):
+            output_template = cmd[cmd.index("--output") + 1]
+            out_dir = Path(output_template).parent
+            (out_dir / "episode.mp3").write_bytes(b"\x00" * 100)
+
+        # Mock client that raises an error
+        bad_client = MagicMock()
+        bad_client.messages.create.side_effect = Exception("API error")
+
+        with patch("app.subprocess.run", side_effect=fake_subprocess_run), \
+             patch("formatter.get_anthropic_client", return_value=bad_client):
+            app_module._process_queue_item(item)
+
+        # Transcription should still succeed
+        assert item.status == "completed"
+        assert (tmp_path / "test-fmterr.json").exists()
+        # But no formatted files
+        assert not (tmp_path / "test-fmterr.md").exists()

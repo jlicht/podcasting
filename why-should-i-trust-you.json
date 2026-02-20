@@ -1,0 +1,21 @@
+{
+  "show_name": "Why Should I Trust You?",
+  "show_description": "A weekly podcast and YouTube series examining the breakdown in trust surrounding science and public health. Each week the hosts investigate trust collapse by interviewing both skeptics wary of scientific institutions and establishment figures concerned about anti-expertise trends, seeking paths forward through disagreement.",
+  "hosts": [
+    "Brinda Adhikari",
+    "Tom Johnson",
+    "Dr. Maggie Bartlett",
+    "Dr. Mark Abdelmalek"
+  ],
+  "guests": [],
+  "formatting_instructions": [
+    "Fix obviously misspelled names from speech-to-text. Common corrections: 'Brynda' or 'Brenda' should be 'Brinda'. 'Bartlet' should be 'Bartlett'. 'Abdelmalak' or 'Abdelmalik' should be 'Abdelmalek'.",
+    "Capitalize acronyms that Whisper may transcribe in lowercase or mixed case. Examples: 'maha' or 'Maha' should be 'MAHA', 'cdc' should be 'CDC', 'nih' should be 'NIH', 'fda' should be 'FDA', 'who' (when referring to the World Health Organization) should be 'WHO', 'hhs' should be 'HHS', 'rct' should be 'RCT'.",
+    "The show title is 'Why Should I Trust You?' — use this exact title including the question mark.",
+    "Hosts often go by first names: Brinda, Tom, Maggie, Mark. Use full names on first reference, then first names are acceptable.",
+    "Brinda Adhikari is a former executive producer of 'The Problem with Jon Stewart' and former TV news journalist.",
+    "Tom Johnson is a former executive producer of 'The Circus' and former TV news journalist.",
+    "Dr. Maggie Bartlett is a virologist and assistant research professor at Johns Hopkins Bloomberg School of Public Health.",
+    "Dr. Mark Abdelmalek is a dermatologist, skin cancer surgeon, and medical journalist practicing in Philadelphia."
+  ]
+}

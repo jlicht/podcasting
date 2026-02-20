@@ -46,3 +46,20 @@ class TestSaveTranscription:
         assert data["text"] == "test transcript"
         assert data["language"] == "en"
         assert len(data["segments"]) == 1
+        assert data["season"] == ""
+        assert data["episode_number"] == ""
+
+    def test_saves_season_and_episode(self, tmp_path, monkeypatch):
+        import app as app_module
+        monkeypatch.setattr(app_module, "TRANSCRIPTION_DIR", tmp_path)
+
+        result = {
+            "text": "test transcript",
+            "segments": [],
+            "language": "en",
+        }
+        _save_transcription("job-456", "ep.mp3", result, season="2", episode_number="5")
+
+        data = json.loads((tmp_path / "job-456.json").read_text())
+        assert data["season"] == "2"
+        assert data["episode_number"] == "5"

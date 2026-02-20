@@ -7,10 +7,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Mock the whisper module before app is imported so `import whisper` succeeds
-# even when openai-whisper is not installed.
+# Mock the mlx_whisper module before app is imported so `import mlx_whisper` succeeds
+# even when mlx-whisper is not installed.
 _whisper_mock = MagicMock()
-sys.modules.setdefault("whisper", _whisper_mock)
+sys.modules.setdefault("mlx_whisper", _whisper_mock)
 
 from fastapi.testclient import TestClient
 
@@ -35,9 +35,6 @@ def _tmp_dirs(monkeypatch, tmp_path):
 
     yield
 
-    # Ensure model singleton doesn't leak across tests that mock it
-    monkeypatch.setattr(app_module, "_model", None)
-
 
 @pytest.fixture
 def fake_transcription_result():
@@ -53,16 +50,9 @@ def fake_transcription_result():
 
 @pytest.fixture
 def mock_whisper(fake_transcription_result):
-    """Mock whisper.load_model and model.transcribe."""
-    mock_model = MagicMock()
-    mock_model.transcribe.return_value = fake_transcription_result
-
-    with patch("app.whisper") as mock_whisper_module:
-        mock_whisper_module.load_model.return_value = mock_model
-        # Reset model cache so our mock gets picked up
-        import app as app_module
-        app_module._model = None
-        yield mock_model
+    """Mock mlx_whisper.transcribe as a function."""
+    with patch("app.mlx_whisper.transcribe", return_value=fake_transcription_result) as mock_transcribe:
+        yield mock_transcribe
 
 
 @pytest.fixture
@@ -70,3 +60,16 @@ def client(mock_whisper):
     from app import app
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture
+def mock_anthropic():
+    """Mock anthropic.Anthropic client returning a fake formatted response."""
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text="# Episode Title\n\n**Host:** Hello and welcome.\n\n## Topic One\n\n**Guest 1:** Thanks for having me.")]
+    mock_response.usage.input_tokens = 1000
+    mock_response.usage.output_tokens = 500
+    mock_response.stop_reason = "end_turn"
+    mock_client.messages.create.return_value = mock_response
+    return mock_client

@@ -31,7 +31,7 @@ class TestTranscribeUpload:
         assert data["text"] == "Hello world this is a test transcription."
         assert data["language"] == "en"
         assert len(data["segments"]) == 2
-        mock_whisper.transcribe.assert_called_once()
+        mock_whisper.assert_called_once()
 
     def test_rejects_unsupported_extension(self, client):
         resp = client.post(
@@ -118,6 +118,35 @@ class TestTranscriptionHistory:
         assert items[0]["filename"] == "test.mp3"
         assert items[0]["language"] == "en"
 
+    def test_list_includes_has_formatted_false(self, client, mock_whisper):
+        client.post(
+            "/transcribe/upload",
+            files={"file": ("test.mp3", io.BytesIO(b"\x00" * 50), "audio/mpeg")},
+            data={"model_size": "base", "language": ""},
+        )
+
+        resp = client.get("/transcriptions")
+        items = resp.json()
+        assert items[0]["has_formatted"] is False
+
+    def test_list_includes_has_formatted_true(self, client, mock_whisper):
+        import app as app_module
+
+        upload_resp = client.post(
+            "/transcribe/upload",
+            files={"file": ("test.mp3", io.BytesIO(b"\x00" * 50), "audio/mpeg")},
+            data={"model_size": "base", "language": ""},
+        )
+        job_id = upload_resp.json()["job_id"]
+
+        # Create a fake .md file to simulate formatted output
+        md_path = app_module.TRANSCRIPTION_DIR / f"{job_id}.md"
+        md_path.write_text("# Formatted")
+
+        resp = client.get("/transcriptions")
+        items = resp.json()
+        assert items[0]["has_formatted"] is True
+
     def test_get_specific_transcription(self, client, mock_whisper):
         upload_resp = client.post(
             "/transcribe/upload",
@@ -135,3 +164,98 @@ class TestTranscriptionHistory:
     def test_get_nonexistent_transcription(self, client):
         resp = client.get("/transcriptions/does-not-exist")
         assert resp.status_code == 404
+
+
+class TestFormatEndpoints:
+    def _create_transcription(self, client):
+        """Helper to create a transcription and return the job_id."""
+        resp = client.post(
+            "/transcribe/upload",
+            files={"file": ("test.mp3", io.BytesIO(b"\x00" * 50), "audio/mpeg")},
+            data={"model_size": "base", "language": ""},
+        )
+        return resp.json()["job_id"]
+
+    def test_format_success(self, client, mock_whisper, mock_anthropic):
+        job_id = self._create_transcription(client)
+
+        with patch("formatter.get_anthropic_client", return_value=mock_anthropic):
+            resp = client.post(f"/transcriptions/{job_id}/format")
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["job_id"] == job_id
+        assert data["input_tokens"] == 1000
+        assert data["output_tokens"] == 500
+
+    def test_format_with_show_context(self, client, mock_whisper, mock_anthropic):
+        job_id = self._create_transcription(client)
+
+        with patch("formatter.get_anthropic_client", return_value=mock_anthropic):
+            resp = client.post(
+                f"/transcriptions/{job_id}/format",
+                json={"show_context": {"show_name": "My Show", "hosts": ["Alice"]}},
+            )
+
+        assert resp.status_code == 200
+
+    def test_format_not_found(self, client):
+        with patch("formatter.get_anthropic_client", return_value=MagicMock()):
+            resp = client.post("/transcriptions/nonexistent/format")
+        assert resp.status_code == 404
+
+    def test_format_no_api_key(self, client, mock_whisper):
+        job_id = self._create_transcription(client)
+
+        with patch("formatter.get_anthropic_client", return_value=None):
+            resp = client.post(f"/transcriptions/{job_id}/format")
+
+        assert resp.status_code == 503
+
+    def test_get_formatted_success(self, client, mock_whisper):
+        import app as app_module
+
+        job_id = self._create_transcription(client)
+        md_path = app_module.TRANSCRIPTION_DIR / f"{job_id}.md"
+        md_path.write_text("# Formatted Transcript\n\n**Host:** Hello.")
+
+        resp = client.get(f"/transcriptions/{job_id}/formatted")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["job_id"] == job_id
+        assert "# Formatted Transcript" in data["markdown"]
+
+    def test_get_formatted_not_found(self, client):
+        resp = client.get("/transcriptions/nonexistent/formatted")
+        assert resp.status_code == 404
+
+    def test_download_md(self, client, mock_whisper):
+        import app as app_module
+
+        job_id = self._create_transcription(client)
+        md_path = app_module.TRANSCRIPTION_DIR / f"{job_id}.md"
+        md_path.write_text("# Test Markdown")
+
+        resp = client.get(f"/transcriptions/{job_id}/download/md")
+        assert resp.status_code == 200
+        assert "text/markdown" in resp.headers["content-type"]
+
+    def test_download_docx(self, client, mock_whisper):
+        import app as app_module
+        from formatter import markdown_to_docx
+
+        job_id = self._create_transcription(client)
+        docx_path = app_module.TRANSCRIPTION_DIR / f"{job_id}.docx"
+        markdown_to_docx("# Test", docx_path)
+
+        resp = client.get(f"/transcriptions/{job_id}/download/docx")
+        assert resp.status_code == 200
+        assert "wordprocessingml" in resp.headers["content-type"]
+
+    def test_download_not_found(self, client):
+        resp = client.get("/transcriptions/nonexistent/download/md")
+        assert resp.status_code == 404
+
+    def test_download_invalid_format(self, client):
+        resp = client.get("/transcriptions/some-id/download/pdf")
+        assert resp.status_code == 400

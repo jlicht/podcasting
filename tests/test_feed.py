@@ -1,9 +1,12 @@
 """Tests for podcast feed parsing."""
 
+import json
 from unittest.mock import patch, MagicMock
 
 import feedparser
 import pytest
+
+from app import _resolve_feed_url
 
 
 SAMPLE_RSS = """<?xml version="1.0" encoding="UTF-8"?>
@@ -113,3 +116,66 @@ class TestFetchFeed:
 
         data = resp.json()
         assert data["total"] >= 0  # May or may not parse depending on feedparser behavior
+
+
+class TestResolveFeedUrl:
+    def test_non_apple_url_returned_unchanged(self):
+        url = "https://feeds.example.com/podcast.xml"
+        assert _resolve_feed_url(url) == url
+
+    def test_apple_url_resolved_to_rss(self):
+        apple_url = "https://podcasts.apple.com/us/podcast/my-show/id1234567890"
+        fake_response = json.dumps({
+            "resultCount": 1,
+            "results": [{"feedUrl": "https://feeds.example.com/rss.xml"}],
+        }).encode()
+
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = fake_response
+        mock_resp.__enter__ = lambda s: s
+        mock_resp.__exit__ = MagicMock(return_value=False)
+
+        with patch("app.urlopen", return_value=mock_resp) as mock_urlopen:
+            result = _resolve_feed_url(apple_url)
+
+        assert result == "https://feeds.example.com/rss.xml"
+        call_url = mock_urlopen.call_args[0][0]
+        assert "1234567890" in call_url
+
+    def test_apple_url_no_feed_raises(self):
+        apple_url = "https://podcasts.apple.com/us/podcast/my-show/id9999999999"
+        fake_response = json.dumps({"resultCount": 0, "results": []}).encode()
+
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = fake_response
+        mock_resp.__enter__ = lambda s: s
+        mock_resp.__exit__ = MagicMock(return_value=False)
+
+        with patch("app.urlopen", return_value=mock_resp):
+            from fastapi import HTTPException
+            with pytest.raises(HTTPException) as exc_info:
+                _resolve_feed_url(apple_url)
+            assert exc_info.value.status_code == 400
+
+    def test_apple_url_integration(self, client):
+        """Apple Podcasts URL flows through the full /feed/fetch endpoint."""
+        apple_url = "https://podcasts.apple.com/us/podcast/test-show/id1234567890"
+        rss_url = "https://feeds.example.com/rss.xml"
+
+        fake_lookup = json.dumps({
+            "resultCount": 1,
+            "results": [{"feedUrl": rss_url}],
+        }).encode()
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = fake_lookup
+        mock_resp.__enter__ = lambda s: s
+        mock_resp.__exit__ = MagicMock(return_value=False)
+
+        parsed = feedparser.parse(SAMPLE_RSS)
+        with patch("app.urlopen", return_value=mock_resp), \
+             patch("app.feedparser.parse", return_value=parsed) as mock_parse:
+            resp = client.post("/feed/fetch", data={"url": apple_url})
+
+        assert resp.status_code == 200
+        # feedparser should have been called with the resolved RSS URL
+        mock_parse.assert_called_once_with(rss_url)
