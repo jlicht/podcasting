@@ -18,6 +18,20 @@ A web application for transcribing podcasts using Whisper via [mlx-whisper](http
 - **Claude formatting** — Optionally post-process transcripts with Claude to add speaker labels, paragraphs, and section headers (requires `ANTHROPIC_API_KEY`)
 - **CLI batch processing** — Format all transcriptions in a directory with parallel workers
 
+## Launching without the command line
+
+If you already have the project set up and just want to run the app:
+
+1. **Set your API key** (first time only) — Copy `.env.example` to `.env` and replace the placeholder with your real key:
+   ```
+   ANTHROPIC_API_KEY=sk-ant-your-real-key-here
+   ```
+2. **Double-click** `Start Podcast Transcriber.command`. A Terminal window will open, the server will start, and your browser will open to the app automatically.
+3. **First launch only** — macOS may block the file. Right-click it and choose **Open**, then click **Open** in the dialog.
+4. **Stop the server** — Close the Terminal window.
+
+> **Tip:** Drag `Start Podcast Transcriber.command` to your Dock for quick access.
+
 ## Quick start on a MacBook Air
 
 These steps assume a fresh Mac with nothing installed. Open Terminal (Applications > Utilities > Terminal) and run the following.

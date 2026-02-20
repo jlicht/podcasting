@@ -6,6 +6,7 @@ venv/
 .venv/
 uploads/
 transcriptions/
+output/
 *.egg-info/
 dist/
 build/
