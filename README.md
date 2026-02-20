@@ -12,55 +12,71 @@ A web application for transcribing podcasts using OpenAI's Whisper model. Upload
 - **History** — Browse and reload past transcriptions
 - **Language detection** — Automatic language detection or manual override
 
-## Prerequisites
+## Quick start on a MacBook Air
 
-- Python 3.10+
-- FFmpeg (required by Whisper)
+These steps assume a fresh Mac with nothing installed. Open Terminal (Applications > Utilities > Terminal) and run the following.
 
-### Install FFmpeg
-
-```bash
-# Ubuntu/Debian
-sudo apt install ffmpeg
-
-# macOS
-brew install ffmpeg
-
-# Windows (with chocolatey)
-choco install ffmpeg
-```
-
-## Setup
+### 1. Install Homebrew (if you don't have it)
 
 ```bash
-# Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-
-# Install dependencies
-pip install -r requirements.txt
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-## Usage
+Follow the on-screen instructions to add `brew` to your PATH.
+
+### 2. Install system dependencies
 
 ```bash
-# Start the server
-uvicorn app:app --reload --host 0.0.0.0 --port 8000
+brew install ffmpeg uv
 ```
+
+`ffmpeg` is required by Whisper for audio decoding. `uv` manages Python and project dependencies automatically.
+
+### 3. Clone and run
+
+```bash
+git clone <repo-url> podcasting
+cd podcasting
+mkdir -p uploads transcriptions
+uv run uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
+On the first run `uv` will download Python (if needed), create a virtual environment, and install all dependencies. This may take a few minutes.
 
 Open http://localhost:8000 in your browser.
 
-### Whisper Model Sizes
+### 4. Whisper model sizes
 
-| Model  | Parameters | Speed    | Accuracy |
-|--------|-----------|----------|----------|
-| tiny   | 39M       | Fastest  | Lower    |
-| base   | 74M       | Fast     | Good     |
-| small  | 244M      | Moderate | Better   |
-| medium | 769M      | Slow     | High     |
-| large  | 1550M     | Slowest  | Best     |
+The model is downloaded once on the first transcription request and cached in `~/.cache/whisper/`.
 
-The model is loaded on first transcription request. Larger models require more RAM/VRAM.
+| Model  | Parameters | RAM needed | Relative speed | Best for                     |
+|--------|-----------|------------|----------------|------------------------------|
+| tiny   | 39M       | ~1 GB      | ~10x           | Quick drafts                 |
+| base   | 74M       | ~1 GB      | ~7x            | Good everyday default        |
+| small  | 244M      | ~2 GB      | ~4x            | Better accuracy              |
+| medium | 769M      | ~5 GB      | ~2x            | High accuracy                |
+| large  | 1550M     | ~10 GB     | 1x             | Best accuracy (16 GB+ Macs) |
+
+A MacBook Air with 8 GB RAM can comfortably run `base` or `small`. Use `medium` only if you have 16 GB. `large` needs 16 GB+ and will be slow without a GPU.
+
+### 5. Stopping the server
+
+Press `Ctrl+C` in the Terminal window where the server is running.
+
+## Development setup
+
+```bash
+brew install ffmpeg uv
+git clone <repo-url> podcasting
+cd podcasting
+mkdir -p uploads transcriptions
+
+# Run tests
+uv run pytest tests/ -v
+
+# Run server with auto-reload
+uv run uvicorn app:app --reload --host 0.0.0.0 --port 8000
+```
 
 ## API Endpoints
 
