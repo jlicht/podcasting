@@ -11,9 +11,12 @@ A web application for transcribing podcasts using Whisper via [mlx-whisper](http
 - **Multiple Whisper models** — Choose from tiny to large depending on your speed/accuracy needs
 - **Timestamps** — View transcription with per-segment timestamps
 - **Export** — Copy to clipboard, download as plain text, or download as SRT subtitles
+- **Podcast feed** — Load an RSS feed or Apple Podcasts link to browse and select episodes
+- **Batch queue** — Queue multiple episodes for transcription with progress tracking
 - **History** — Browse and reload past transcriptions
 - **Language detection** — Automatic language detection or manual override
 - **Claude formatting** — Optionally post-process transcripts with Claude to add speaker labels, paragraphs, and section headers (requires `ANTHROPIC_API_KEY`)
+- **CLI batch processing** — Format all transcriptions in a directory with parallel workers
 
 ## Quick start on a MacBook Air
 
@@ -107,33 +110,56 @@ Formatted output is saved alongside the raw JSON as `.md` (Markdown) and `.docx`
 You can also format existing transcriptions from the command line:
 
 ```bash
-# Basic usage
+# Single file
 ANTHROPIC_API_KEY=your-key uv run python format_transcript.py transcriptions/<job_id>.json
 
 # With show context for better speaker identification
 ANTHROPIC_API_KEY=your-key uv run python format_transcript.py transcriptions/<job_id>.json --context show_context.json
 
-# Custom output directory
-ANTHROPIC_API_KEY=your-key uv run python format_transcript.py transcriptions/<job_id>.json --output-dir output/
+# Batch-process all unprocessed files in a directory (newest first, 4 parallel workers)
+ANTHROPIC_API_KEY=your-key uv run python format_transcript.py transcriptions/ --context show_context.json
+
+# Adjust parallelism (e.g. 2 workers to stay under rate limits)
+ANTHROPIC_API_KEY=your-key uv run python format_transcript.py transcriptions/ --context show_context.json --workers 2
+
+# Custom output directory (defaults to output/)
+ANTHROPIC_API_KEY=your-key uv run python format_transcript.py transcriptions/<job_id>.json --output-dir my-output/
 ```
+
+In batch mode, the tool scans the source directory for `.json` transcript files, skips any that already have a corresponding `.md` in the output directory, and processes the rest newest-first. Output files are named from episode metadata (e.g. `S02E05 - Episode Title.md`) rather than job IDs.
 
 ### Show context file
 
-Create a `show_context.json` to help Claude identify speakers:
+Create a show context JSON file to help Claude identify speakers and apply show-specific corrections:
 
 ```json
 {
   "show_name": "My Podcast",
   "show_description": "A weekly show about technology",
   "hosts": ["Alice Smith", "Bob Jones"],
-  "guests": []
+  "guests": [],
+  "formatting_instructions": [
+    "Fix common STT misspellings: 'Alyse' should be 'Alice'.",
+    "Capitalize acronyms: 'ai' should be 'AI', 'api' should be 'API'."
+  ]
 }
 ```
 
+The `formatting_instructions` field is optional. Use it to provide show-specific guidance like name corrections and acronym capitalization that Whisper commonly gets wrong. See `why-should-i-trust-you.json` for a full example.
+
 ## API Endpoints
 
+**Transcription:**
 - `POST /transcribe/upload` — Upload an audio file for transcription
 - `POST /transcribe/url` — Provide a URL to download and transcribe
+
+**Podcast feed & queue:**
+- `POST /feed/fetch` — Parse an RSS feed or Apple Podcasts URL and return episodes
+- `POST /queue/add` — Queue episodes for batch transcription
+- `GET /queue/status` — Get queue progress and status
+- `POST /queue/clear` — Remove completed/failed items from the queue
+
+**History & formatting:**
 - `GET /transcriptions` — List all past transcriptions (includes `has_formatted` field)
 - `GET /transcriptions/{job_id}` — Get a specific transcription result
 - `POST /transcriptions/{job_id}/format` — Format/re-format a transcription with Claude
