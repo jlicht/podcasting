@@ -13,6 +13,7 @@ from formatter import (
     format_transcript,
     markdown_to_docx,
     save_formatted_output,
+    build_output_stem,
     _build_system_prompt,
     _build_user_message,
 )
@@ -222,6 +223,43 @@ class TestMarkdownToDocx:
         assert any("Alice:" in r.text for r in bold_runs)
 
 
+class TestBuildOutputStem:
+    def test_season_and_episode(self):
+        t = TranscriptData(job_id="abc", filename="My Great Episode", text="", season="2", episode_number="5")
+        assert build_output_stem(t) == "S02E05 - My Great Episode"
+
+    def test_episode_only(self):
+        t = TranscriptData(job_id="abc", filename="My Episode", text="", episode_number="12")
+        assert build_output_stem(t) == "E12 - My Episode"
+
+    def test_no_episode_info(self):
+        t = TranscriptData(job_id="abc", filename="Just a Title", text="")
+        assert build_output_stem(t) == "Just a Title"
+
+    def test_strips_audio_extension(self):
+        t = TranscriptData(job_id="abc", filename="episode.mp3", text="", season="1", episode_number="3")
+        assert build_output_stem(t) == "S01E03 - episode"
+
+    def test_fallback_to_job_id(self):
+        t = TranscriptData(job_id="abc-123", filename="", text="")
+        assert build_output_stem(t) == "abc-123"
+
+    def test_sanitizes_problematic_characters(self):
+        t = TranscriptData(job_id="abc", filename='What: A "Test"?', text="", episode_number="1")
+        stem = build_output_stem(t)
+        assert ":" not in stem
+        assert '"' not in stem
+        assert "?" not in stem
+
+    def test_zero_pads_single_digits(self):
+        t = TranscriptData(job_id="abc", filename="Ep", text="", season="1", episode_number="3")
+        assert build_output_stem(t) == "S01E03 - Ep"
+
+    def test_preserves_multi_digit_numbers(self):
+        t = TranscriptData(job_id="abc", filename="Ep", text="", season="12", episode_number="103")
+        assert build_output_stem(t) == "S12E103 - Ep"
+
+
 class TestSaveFormattedOutput:
     def test_saves_both_files(self, tmp_path):
         result = FormatResult(
@@ -236,6 +274,18 @@ class TestSaveFormattedOutput:
         assert md_path.name == "job-xyz.md"
         assert docx_path.name == "job-xyz.docx"
         assert md_path.read_text() == "# Test\n\n**Host:** Hello."
+
+    def test_saves_with_transcript_metadata(self, tmp_path):
+        result = FormatResult(markdown="# Test")
+        transcript = TranscriptData(
+            job_id="abc", filename="My Episode", text="", season="2", episode_number="5",
+        )
+        md_path, docx_path = save_formatted_output(result, tmp_path, "abc", transcript=transcript)
+
+        assert md_path.name == "S02E05 - My Episode.md"
+        assert docx_path.name == "S02E05 - My Episode.docx"
+        assert md_path.exists()
+        assert docx_path.exists()
 
     def test_creates_output_dir(self, tmp_path):
         output_dir = tmp_path / "nested" / "output"

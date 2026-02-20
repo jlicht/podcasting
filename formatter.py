@@ -267,20 +267,63 @@ def _add_formatted_text(paragraph, text: str) -> None:
 # Output saving
 # ---------------------------------------------------------------------------
 
+def build_output_stem(transcript: TranscriptData) -> str:
+    """Build a human-readable filename stem from transcript metadata.
+
+    Examples:
+        S02E05 - Episode Title
+        E03 - Episode Title
+        Episode Title
+    """
+    parts = []
+
+    season = transcript.season.strip() if transcript.season else ""
+    episode = transcript.episode_number.strip() if transcript.episode_number else ""
+
+    if season and episode:
+        parts.append(f"S{season.zfill(2)}E{episode.zfill(2)}")
+    elif episode:
+        parts.append(f"E{episode.zfill(2)}")
+
+    # Use filename as the title, strip common file extensions
+    title = transcript.filename
+    for ext in (".mp3", ".wav", ".m4a", ".ogg", ".flac", ".aac", ".opus"):
+        if title.lower().endswith(ext):
+            title = title[: -len(ext)]
+            break
+
+    if title:
+        parts.append(title.strip())
+
+    stem = " - ".join(parts) if parts else transcript.job_id
+
+    # Sanitize for filesystem: remove characters that are problematic in filenames
+    stem = re.sub(r'[<>:"/\\|?*]', "", stem)
+    stem = stem.strip(". ")
+
+    return stem or transcript.job_id
+
+
 def save_formatted_output(
     result: FormatResult,
     output_dir: str | Path,
     job_id: str,
+    transcript: TranscriptData | None = None,
 ) -> tuple[Path, Path]:
     """Save formatted transcript as both .md and .docx files.
+
+    When *transcript* is provided, filenames are derived from episode metadata
+    (e.g. ``S02E05 - Episode Title.md``).  Otherwise falls back to *job_id*.
 
     Returns (md_path, docx_path).
     """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    md_path = output_dir / f"{job_id}.md"
-    docx_path = output_dir / f"{job_id}.docx"
+    stem = build_output_stem(transcript) if transcript else job_id
+
+    md_path = output_dir / f"{stem}.md"
+    docx_path = output_dir / f"{stem}.docx"
 
     md_path.write_text(result.markdown, encoding="utf-8")
     markdown_to_docx(result.markdown, docx_path)
