@@ -587,6 +587,7 @@ async def get_formatted_transcription(job_id: str):
 async def download_formatted(job_id: str, fmt: str):
     """Download the formatted transcript as .md or .docx."""
     from fastapi.responses import FileResponse
+    from formatter import TranscriptData, build_output_stem
 
     if fmt not in ("md", "docx"):
         raise HTTPException(400, "Format must be 'md' or 'docx'")
@@ -595,13 +596,21 @@ async def download_formatted(job_id: str, fmt: str):
     if not file_path.exists():
         raise HTTPException(404, f"Formatted file not found ({fmt})")
 
+    # Build a human-readable filename from episode metadata
+    json_path = TRANSCRIPTION_DIR / f"{job_id}.json"
+    if json_path.exists():
+        transcript = TranscriptData.from_json_file(json_path)
+        stem = build_output_stem(transcript)
+    else:
+        stem = job_id
+
     media_type = (
         "text/markdown" if fmt == "md"
         else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
     return FileResponse(
         path=str(file_path),
-        filename=f"{job_id}.{fmt}",
+        filename=f"{stem}.{fmt}",
         media_type=media_type,
     )
 
