@@ -47,14 +47,16 @@ mkdir -p uploads transcriptions
 uv run uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
-To enable Claude-powered transcript formatting, set your API key before starting:
+To enable Claude-powered transcript formatting (speaker labels, paragraphs, Word document export), set your Anthropic API key before starting:
 
 ```bash
-export ANTHROPIC_API_KEY=your-key-here
+export ANTHROPIC_API_KEY=sk-ant-...
 uv run uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
-Formatting is optional — transcriptions work fine without an API key.
+You can get an API key from [console.anthropic.com](https://console.anthropic.com) (requires a separate developer account with API credits — this is not covered by a Claude Pro/Max subscription). When the key is set, the web interface will automatically format transcripts after processing and offer `.md` and `.docx` download buttons.
+
+Formatting is optional — transcriptions work fine without an API key, you just won't get speaker labels or Word document exports.
 
 On the first run `uv` will download Python (if needed), create a virtual environment, and install all dependencies. This may take a few minutes.
 

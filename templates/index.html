@@ -681,8 +681,9 @@
                 <button class="btn-sm" onclick="copyText()">Copy</button>
                 <button class="btn-sm" onclick="downloadText()">Download .txt</button>
                 <button class="btn-sm" onclick="downloadSRT()">Download .srt</button>
+                <span class="btn-sm" id="btn-formatting" style="display:none; opacity:0.6; cursor:default;">Formatting with Claude...</span>
                 <button class="btn-sm" id="btn-download-md" style="display:none" onclick="downloadFormatted('md')">Download .md</button>
-                <button class="btn-sm" id="btn-download-docx" style="display:none" onclick="downloadFormatted('docx')">Download .docx</button>
+                <button class="btn-sm btn-outline" id="btn-download-docx" style="display:none" onclick="downloadFormatted('docx')">Download .docx</button>
             </div>
             <div class="transcript-text" id="transcript-text"></div>
         </div>
@@ -810,19 +811,43 @@
             document.getElementById('result-panel').style.display = 'block';
             showView('plain');
 
-            // Check if formatted versions exist
-            if (data.job_id) {
-                fetch(`/transcriptions/${data.job_id}/formatted`)
-                    .then(resp => {
-                        const show = resp.ok;
-                        document.getElementById('btn-download-md').style.display = show ? '' : 'none';
-                        document.getElementById('btn-download-docx').style.display = show ? '' : 'none';
-                    })
-                    .catch(() => {
-                        document.getElementById('btn-download-md').style.display = 'none';
-                        document.getElementById('btn-download-docx').style.display = 'none';
-                    });
-            }
+            // Reset formatted download buttons
+            document.getElementById('btn-formatting').style.display = 'none';
+            document.getElementById('btn-download-md').style.display = 'none';
+            document.getElementById('btn-download-docx').style.display = 'none';
+
+            if (!data.job_id) return;
+
+            // Check if formatted versions already exist; if not, trigger formatting
+            fetch(`/transcriptions/${data.job_id}/formatted`)
+                .then(resp => {
+                    if (resp.ok) {
+                        showFormattedButtons(data.job_id);
+                    } else {
+                        triggerFormatting(data.job_id);
+                    }
+                })
+                .catch(() => triggerFormatting(data.job_id));
+        }
+
+        function triggerFormatting(jobId) {
+            const btn = document.getElementById('btn-formatting');
+            btn.style.display = '';
+
+            fetch(`/transcriptions/${jobId}/format`, { method: 'POST' })
+                .then(resp => {
+                    btn.style.display = 'none';
+                    if (resp.ok) {
+                        showFormattedButtons(jobId);
+                    }
+                    // 503 (no API key) or other errors: silently hide, no download buttons
+                })
+                .catch(() => { btn.style.display = 'none'; });
+        }
+
+        function showFormattedButtons(jobId) {
+            document.getElementById('btn-download-md').style.display = '';
+            document.getElementById('btn-download-docx').style.display = '';
         }
 
         function showView(view) {
@@ -880,11 +905,29 @@
             return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
         }
 
+        function buildOutputStem(data) {
+            const parts = [];
+            const season = (data.season || '').trim();
+            const episode = (data.episode_number || '').trim();
+            if (season && episode) {
+                parts.push('S' + season.padStart(2, '0') + 'E' + episode.padStart(2, '0'));
+            } else if (episode) {
+                parts.push('E' + episode.padStart(2, '0'));
+            }
+            let title = data.filename || '';
+            ['.mp3','.wav','.m4a','.ogg','.flac','.aac','.opus'].forEach(ext => {
+                if (title.toLowerCase().endsWith(ext)) title = title.slice(0, -ext.length);
+            });
+            if (title.trim()) parts.push(title.trim());
+            return parts.length ? parts.join(' - ') : data.job_id;
+        }
+
         function downloadFormatted(fmt) {
             if (!currentResult || !currentResult.job_id) return;
+            const stem = buildOutputStem(currentResult);
             const a = document.createElement('a');
             a.href = `/transcriptions/${currentResult.job_id}/download/${fmt}`;
-            a.download = `${currentResult.job_id}.${fmt}`;
+            a.download = `${stem}.${fmt}`;
             a.click();
         }
 
@@ -1092,8 +1135,10 @@
         // ===================================================================
 
         function showQueuePanel() {
-            document.getElementById('queue-panel').classList.add('active');
+            const panel = document.getElementById('queue-panel');
+            panel.classList.add('active');
             startQueuePolling();
+            setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
 
         function startQueuePolling() {
