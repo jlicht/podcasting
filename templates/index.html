@@ -15,7 +15,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 960px;
             margin: 0 auto;
             padding: 2rem 1rem;
         }
@@ -32,6 +32,7 @@
             margin-bottom: 2rem;
         }
 
+        /* Tabs */
         .tabs {
             display: flex;
             gap: 0;
@@ -57,9 +58,8 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
+        /* Forms */
+        .form-group { margin-bottom: 1.25rem; }
 
         label {
             display: block;
@@ -110,6 +110,7 @@
 
         .options-row .form-group { flex: 1; }
 
+        /* Buttons */
         button[type="submit"], .btn {
             display: inline-flex;
             align-items: center;
@@ -128,6 +129,28 @@
         button[type="submit"]:hover, .btn:hover { background: #6366f1; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
 
+        .btn-sm {
+            padding: 0.4rem 0.85rem;
+            font-size: 0.8rem;
+            background: #334155;
+            color: #e2e8f0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-sm:hover { background: #475569; }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #818cf8;
+            color: #818cf8;
+        }
+
+        .btn-outline:hover { background: rgba(129, 140, 248, 0.1); }
+
+        /* Result panel */
         .result-panel {
             display: none;
             margin-top: 2rem;
@@ -164,20 +187,8 @@
             gap: 0.5rem;
             padding: 0.75rem 1.5rem;
             border-bottom: 1px solid #334155;
+            flex-wrap: wrap;
         }
-
-        .btn-sm {
-            padding: 0.4rem 0.85rem;
-            font-size: 0.8rem;
-            background: #334155;
-            color: #e2e8f0;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-sm:hover { background: #475569; }
 
         .transcript-text {
             padding: 1.5rem;
@@ -204,6 +215,10 @@
 
         .segment-text { flex: 1; }
 
+        .view-toggle { display: flex; gap: 0; }
+        .view-toggle .btn-sm.active { background: #818cf8; color: #fff; }
+
+        /* Spinner */
         .spinner {
             display: none;
             text-align: center;
@@ -226,6 +241,7 @@
 
         .spinner p { color: #94a3b8; font-size: 0.9rem; }
 
+        /* Error */
         .error-msg {
             display: none;
             background: rgba(239, 68, 68, 0.1);
@@ -237,12 +253,8 @@
             font-size: 0.9rem;
         }
 
-        .view-toggle { display: flex; gap: 0; }
-        .view-toggle .btn-sm.active { background: #818cf8; color: #fff; }
-
-        .history-list {
-            margin-top: 1rem;
-        }
+        /* History */
+        .history-list { margin-top: 1rem; }
 
         .history-item {
             display: flex;
@@ -259,16 +271,239 @@
         .history-item:hover { background: #253046; }
         .history-item .name { font-weight: 500; }
         .history-item .lang { color: #94a3b8; font-size: 0.8rem; }
+
+        /* ===================== Podcast Feed styles ===================== */
+
+        .show-header {
+            display: flex;
+            gap: 1.25rem;
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        .show-header img {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: #334155;
+            flex-shrink: 0;
+        }
+
+        .show-info h2 { font-size: 1.2rem; color: #f8fafc; margin-bottom: 0.35rem; }
+        .show-info p { font-size: 0.85rem; color: #94a3b8; line-height: 1.5; }
+
+        .episode-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .episode-toolbar .left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .episode-toolbar .right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .episode-count {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .selected-count {
+            font-size: 0.85rem;
+            color: #818cf8;
+            font-weight: 600;
+        }
+
+        .episode-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .episode-item {
+            display: flex;
+            gap: 0.85rem;
+            background: #1e293b;
+            border-radius: 10px;
+            padding: 1rem 1.15rem;
+            align-items: flex-start;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+
+        .episode-item:hover { background: #253046; }
+
+        .episode-item input[type="checkbox"] {
+            margin-top: 0.25rem;
+            width: 18px;
+            height: 18px;
+            accent-color: #818cf8;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .episode-body { flex: 1; min-width: 0; }
+
+        .episode-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #f8fafc;
+            margin-bottom: 0.3rem;
+            line-height: 1.3;
+        }
+
+        .episode-meta {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.78rem;
+            color: #64748b;
+            flex-wrap: wrap;
+            margin-bottom: 0.35rem;
+        }
+
+        .episode-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .episode-desc {
+            font-size: 0.82rem;
+            color: #94a3b8;
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Queue panel */
+        .queue-panel {
+            display: none;
+            margin-top: 2rem;
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .queue-panel.active { display: block; }
+
+        .queue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .queue-header h3 { font-size: 1rem; color: #f8fafc; }
+
+        .queue-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1.5rem;
+            border-bottom: 1px solid #1a2332;
+        }
+
+        .queue-item:last-child { border-bottom: none; }
+
+        .queue-item-title {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .queue-status {
+            font-size: 0.78rem;
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .queue-status.pending     { background: #334155; color: #94a3b8; }
+        .queue-status.downloading { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+        .queue-status.transcribing{ background: rgba(129, 140, 248, 0.15); color: #818cf8; }
+        .queue-status.completed   { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+        .queue-status.failed      { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        .queue-item-action {
+            cursor: pointer;
+            color: #818cf8;
+            font-size: 0.8rem;
+            text-decoration: underline;
+            background: none;
+            border: none;
+        }
+
+        .queue-item-action:hover { color: #a5b4fc; }
+
+        .queue-progress-bar {
+            height: 3px;
+            background: #334155;
+        }
+
+        .queue-progress-fill {
+            height: 100%;
+            background: #818cf8;
+            transition: width 0.3s;
+        }
+
+        /* Feed inline spinner */
+        .feed-loading {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .feed-loading.active { display: flex; }
+
+        .feed-loading .spinner-ring {
+            width: 22px;
+            height: 22px;
+            border-width: 2px;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Podcast Transcriber</h1>
-        <p class="subtitle">Upload an audio file or paste a URL to transcribe a podcast using Whisper.</p>
+        <p class="subtitle">Upload an audio file, paste a URL, or load an entire podcast feed to transcribe episodes.</p>
 
         <div class="tabs">
             <button class="tab active" data-tab="upload">Upload File</button>
             <button class="tab" data-tab="url">From URL</button>
+            <button class="tab" data-tab="feed">Podcast Feed</button>
             <button class="tab" data-tab="history">History</button>
         </div>
 
@@ -331,6 +566,63 @@
             </form>
         </div>
 
+        <!-- Podcast Feed Tab -->
+        <div id="tab-feed" class="tab-content">
+            <form id="feed-form">
+                <div class="form-group">
+                    <label for="feed-url">Podcast RSS Feed URL</label>
+                    <input type="url" id="feed-url" name="url" placeholder="https://feeds.example.com/my-podcast" required>
+                </div>
+                <button type="submit" id="feed-fetch-btn">Load Episodes</button>
+            </form>
+
+            <div class="feed-loading" id="feed-loading">
+                <div class="spinner-ring"></div>
+                <span>Loading feed...</span>
+            </div>
+
+            <div id="feed-error" class="error-msg"></div>
+
+            <!-- Show header + episode list (hidden until loaded) -->
+            <div id="feed-results" style="display:none;">
+                <div class="show-header" id="show-header">
+                    <img id="show-image" src="" alt="">
+                    <div class="show-info">
+                        <h2 id="show-title"></h2>
+                        <p id="show-description"></p>
+                    </div>
+                </div>
+
+                <div class="episode-toolbar">
+                    <div class="left">
+                        <label style="display:inline-flex; align-items:center; gap:0.4rem; cursor:pointer; margin-bottom:0;">
+                            <input type="checkbox" id="select-all-cb" style="width:18px; height:18px; accent-color:#818cf8; cursor:pointer;">
+                            <span style="font-size:0.85rem;">Select all</span>
+                        </label>
+                        <span class="episode-count" id="episode-count"></span>
+                        <span class="selected-count" id="selected-count"></span>
+                    </div>
+                    <div class="right">
+                        <div class="form-group" style="margin-bottom:0; min-width:140px;">
+                            <select id="feed-model" style="padding:0.5rem 0.75rem; font-size:0.85rem;">
+                                <option value="tiny">Tiny</option>
+                                <option value="base" selected>Base</option>
+                                <option value="small">Small</option>
+                                <option value="medium">Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0; min-width:100px;">
+                            <input type="text" id="feed-lang" placeholder="Lang" style="padding:0.5rem 0.75rem; font-size:0.85rem;">
+                        </div>
+                        <button class="btn" id="queue-selected-btn" type="button" disabled>Transcribe Selected</button>
+                    </div>
+                </div>
+
+                <div class="episode-list" id="episode-list"></div>
+            </div>
+        </div>
+
         <!-- History Tab -->
         <div id="tab-history" class="tab-content">
             <div class="history-list" id="history-list">
@@ -338,7 +630,7 @@
             </div>
         </div>
 
-        <!-- Spinner -->
+        <!-- Spinner (for single transcriptions) -->
         <div class="spinner" id="spinner">
             <div class="spinner-ring"></div>
             <p>Transcribing audio... This may take a while for longer files.</p>
@@ -347,7 +639,7 @@
         <!-- Error -->
         <div class="error-msg" id="error-msg"></div>
 
-        <!-- Result Panel -->
+        <!-- Result Panel (single transcription) -->
         <div class="result-panel" id="result-panel">
             <div class="result-header">
                 <h3 id="result-title">Transcription</h3>
@@ -366,13 +658,32 @@
             </div>
             <div class="transcript-text" id="transcript-text"></div>
         </div>
+
+        <!-- Queue Panel -->
+        <div class="queue-panel" id="queue-panel">
+            <div class="queue-header">
+                <h3>Transcription Queue</h3>
+                <button class="btn-sm" onclick="clearQueue()">Clear Finished</button>
+            </div>
+            <div class="queue-progress-bar">
+                <div class="queue-progress-fill" id="queue-progress-fill" style="width:0%"></div>
+            </div>
+            <div class="queue-list" id="queue-list"></div>
+        </div>
     </div>
 
     <script>
+        // ===================================================================
+        // State
+        // ===================================================================
         let currentResult = null;
         let currentView = 'plain';
+        let feedEpisodes = [];     // episodes loaded from feed
+        let queuePolling = null;   // interval id for queue polling
 
+        // ===================================================================
         // Tabs
+        // ===================================================================
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -383,7 +694,9 @@
             });
         });
 
-        // File drop zone
+        // ===================================================================
+        // Upload tab — file drop
+        // ===================================================================
         const fileDrop = document.getElementById('file-drop');
         const fileInput = document.getElementById('file-input');
         const fileName = document.getElementById('file-name');
@@ -403,7 +716,9 @@
             if (fileInput.files.length) fileName.textContent = fileInput.files[0].name;
         });
 
+        // ===================================================================
         // Upload form
+        // ===================================================================
         document.getElementById('upload-form').addEventListener('submit', async e => {
             e.preventDefault();
             if (!fileInput.files.length) return;
@@ -416,7 +731,9 @@
             await transcribe('/transcribe/upload', formData);
         });
 
+        // ===================================================================
         // URL form
+        // ===================================================================
         document.getElementById('url-form').addEventListener('submit', async e => {
             e.preventDefault();
 
@@ -428,6 +745,9 @@
             await transcribe('/transcribe/url', formData);
         });
 
+        // ===================================================================
+        // Single transcription helpers
+        // ===================================================================
         async function transcribe(endpoint, formData) {
             const spinner = document.getElementById('spinner');
             const errorMsg = document.getElementById('error-msg');
@@ -443,9 +763,7 @@
                 const resp = await fetch(endpoint, { method: 'POST', body: formData });
                 const data = await resp.json();
 
-                if (!resp.ok) {
-                    throw new Error(data.detail || 'Transcription failed');
-                }
+                if (!resp.ok) throw new Error(data.detail || 'Transcription failed');
 
                 currentResult = data;
                 showResult(data);
@@ -459,10 +777,9 @@
         }
 
         function showResult(data) {
-            const resultPanel = document.getElementById('result-panel');
             document.getElementById('result-title').textContent = data.filename || 'Transcription';
             document.getElementById('result-lang').textContent = 'Language: ' + data.language;
-            resultPanel.style.display = 'block';
+            document.getElementById('result-panel').style.display = 'block';
             showView('plain');
         }
 
@@ -503,14 +820,13 @@
         }
 
         function downloadText() {
-            const text = currentResult.text;
-            download(text, (currentResult.filename || 'transcript') + '.txt', 'text/plain');
+            download(currentResult.text, (currentResult.filename || 'transcript') + '.txt', 'text/plain');
         }
 
         function downloadSRT() {
-            const srt = currentResult.segments.map((seg, i) => {
-                return `${i + 1}\n${srtTime(seg.start)} --> ${srtTime(seg.end)}\n${seg.text}\n`;
-            }).join('\n');
+            const srt = currentResult.segments.map((seg, i) =>
+                `${i + 1}\n${srtTime(seg.start)} --> ${srtTime(seg.end)}\n${seg.text}\n`
+            ).join('\n');
             download(srt, (currentResult.filename || 'transcript') + '.srt', 'text/srt');
         }
 
@@ -526,12 +842,13 @@
             const blob = new Blob([content], { type });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
+            a.href = url; a.download = filename; a.click();
             URL.revokeObjectURL(url);
         }
 
+        // ===================================================================
+        // History tab
+        // ===================================================================
         async function loadHistory() {
             const list = document.getElementById('history-list');
             try {
@@ -558,7 +875,6 @@
                 const data = await resp.json();
                 currentResult = data;
                 showResult(data);
-                // Switch back to upload tab visually to show result
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 document.querySelector('[data-tab="upload"]').classList.add('active');
@@ -567,6 +883,269 @@
                 alert('Failed to load transcription');
             }
         }
+
+        // ===================================================================
+        // Podcast Feed tab
+        // ===================================================================
+
+        document.getElementById('feed-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const url = document.getElementById('feed-url').value.trim();
+            if (!url) return;
+
+            const loading = document.getElementById('feed-loading');
+            const feedError = document.getElementById('feed-error');
+            const results = document.getElementById('feed-results');
+
+            loading.classList.add('active');
+            feedError.style.display = 'none';
+            results.style.display = 'none';
+
+            document.getElementById('feed-fetch-btn').disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('url', url);
+                const resp = await fetch('/feed/fetch', { method: 'POST', body: formData });
+                const data = await resp.json();
+
+                if (!resp.ok) throw new Error(data.detail || 'Failed to load feed');
+
+                feedEpisodes = data.episodes;
+                renderShowHeader(data.show);
+                renderEpisodes(data.episodes);
+                results.style.display = 'block';
+            } catch (err) {
+                feedError.textContent = err.message;
+                feedError.style.display = 'block';
+            } finally {
+                loading.classList.remove('active');
+                document.getElementById('feed-fetch-btn').disabled = false;
+            }
+        });
+
+        function renderShowHeader(show) {
+            document.getElementById('show-title').textContent = show.title;
+            document.getElementById('show-description').textContent = show.description;
+            const img = document.getElementById('show-image');
+            if (show.image) {
+                img.src = show.image;
+                img.style.display = 'block';
+            } else {
+                img.style.display = 'none';
+            }
+        }
+
+        function renderEpisodes(episodes) {
+            document.getElementById('episode-count').textContent = `${episodes.length} episode${episodes.length !== 1 ? 's' : ''}`;
+            document.getElementById('select-all-cb').checked = false;
+            updateSelectedCount();
+
+            const list = document.getElementById('episode-list');
+            list.innerHTML = episodes.map((ep, i) => {
+                const meta = [];
+                if (ep.season && ep.episode_number) meta.push(`S${ep.season}E${ep.episode_number}`);
+                else if (ep.episode_number) meta.push(`Ep ${ep.episode_number}`);
+                if (ep.published) meta.push(formatDate(ep.published));
+                if (ep.duration) meta.push(formatDuration(ep.duration));
+                if (ep.audio_length_bytes > 0) meta.push(formatBytes(ep.audio_length_bytes));
+
+                return `
+                <div class="episode-item" onclick="toggleEpisode(event, ${i})">
+                    <input type="checkbox" data-index="${i}" onclick="event.stopPropagation(); toggleEpisode(event, ${i}, true)">
+                    <div class="episode-body">
+                        <div class="episode-title">${escapeHtml(ep.title)}</div>
+                        <div class="episode-meta">
+                            ${meta.map(m => `<span>${escapeHtml(m)}</span>`).join('')}
+                        </div>
+                        ${ep.description ? `<div class="episode-desc">${escapeHtml(ep.description)}</div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleEpisode(event, index, fromCheckbox) {
+            const cb = document.querySelector(`input[data-index="${index}"]`);
+            if (!fromCheckbox) cb.checked = !cb.checked;
+            updateSelectedCount();
+        }
+
+        // Select all / deselect all
+        document.getElementById('select-all-cb').addEventListener('change', function() {
+            const checked = this.checked;
+            document.querySelectorAll('#episode-list input[type="checkbox"]').forEach(cb => cb.checked = checked);
+            updateSelectedCount();
+        });
+
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('#episode-list input[type="checkbox"]');
+            const selected = [...checkboxes].filter(cb => cb.checked).length;
+            const el = document.getElementById('selected-count');
+            const btn = document.getElementById('queue-selected-btn');
+            if (selected === 0) {
+                el.textContent = '';
+                btn.disabled = true;
+                btn.textContent = 'Transcribe Selected';
+            } else {
+                el.textContent = `${selected} selected`;
+                btn.disabled = false;
+                btn.textContent = selected === 1 ? 'Transcribe 1 Episode' : `Transcribe ${selected} Episodes`;
+            }
+        }
+
+        // Queue selected episodes
+        document.getElementById('queue-selected-btn').addEventListener('click', async () => {
+            const checkboxes = document.querySelectorAll('#episode-list input[type="checkbox"]:checked');
+            const episodes = [...checkboxes].map(cb => feedEpisodes[parseInt(cb.dataset.index)]);
+            if (!episodes.length) return;
+
+            const model = document.getElementById('feed-model').value;
+            const lang = document.getElementById('feed-lang').value;
+
+            const btn = document.getElementById('queue-selected-btn');
+            btn.disabled = true;
+            btn.textContent = 'Queuing...';
+
+            try {
+                const resp = await fetch('/queue/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ episodes, model_size: model, language: lang }),
+                });
+                const data = await resp.json();
+
+                if (!resp.ok) throw new Error(data.detail || 'Failed to queue episodes');
+
+                // Uncheck all
+                document.querySelectorAll('#episode-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+                document.getElementById('select-all-cb').checked = false;
+                updateSelectedCount();
+
+                // Show queue panel and start polling
+                showQueuePanel();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                updateSelectedCount();
+            }
+        });
+
+        // ===================================================================
+        // Queue panel
+        // ===================================================================
+
+        function showQueuePanel() {
+            document.getElementById('queue-panel').classList.add('active');
+            startQueuePolling();
+        }
+
+        function startQueuePolling() {
+            if (queuePolling) return;
+            pollQueue(); // immediate first poll
+            queuePolling = setInterval(pollQueue, 2000);
+        }
+
+        function stopQueuePolling() {
+            if (queuePolling) {
+                clearInterval(queuePolling);
+                queuePolling = null;
+            }
+        }
+
+        async function pollQueue() {
+            try {
+                const resp = await fetch('/queue/status');
+                const items = await resp.json();
+                renderQueue(items);
+
+                // Stop polling if all done
+                const active = items.some(i => i.status === 'pending' || i.status === 'downloading' || i.status === 'transcribing');
+                if (!active && items.length > 0) {
+                    stopQueuePolling();
+                }
+                // If queue empty, hide panel
+                if (items.length === 0) {
+                    stopQueuePolling();
+                    document.getElementById('queue-panel').classList.remove('active');
+                }
+            } catch { /* ignore poll errors */ }
+        }
+
+        function renderQueue(items) {
+            const list = document.getElementById('queue-list');
+            const completed = items.filter(i => i.status === 'completed').length;
+            const total = items.length;
+
+            // Progress bar
+            const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+            document.getElementById('queue-progress-fill').style.width = pct + '%';
+
+            list.innerHTML = items.map(item => {
+                const viewBtn = item.status === 'completed'
+                    ? `<button class="queue-item-action" onclick="viewQueueResult('${item.job_id}')">View</button>`
+                    : '';
+                const errorTip = item.error ? ` title="${escapeHtml(item.error)}"` : '';
+                return `
+                <div class="queue-item">
+                    <span class="queue-item-title">${escapeHtml(item.title)}</span>
+                    <span class="queue-status ${item.status}"${errorTip}>${item.status}</span>
+                    ${viewBtn}
+                </div>`;
+            }).join('');
+        }
+
+        async function viewQueueResult(jobId) {
+            await loadTranscription(jobId);
+        }
+
+        async function clearQueue() {
+            await fetch('/queue/clear', { method: 'POST' });
+            pollQueue();
+        }
+
+        // ===================================================================
+        // Utility: date / duration / bytes formatting
+        // ===================================================================
+
+        function formatDate(dateStr) {
+            try {
+                const d = new Date(dateStr);
+                return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch { return dateStr; }
+        }
+
+        function formatDuration(dur) {
+            if (!dur) return '';
+            // Could be "HH:MM:SS", "MM:SS", or raw seconds
+            if (typeof dur === 'number' || /^\d+$/.test(dur)) {
+                const total = parseInt(dur);
+                const h = Math.floor(total / 3600);
+                const m = Math.floor((total % 3600) / 60);
+                const s = total % 60;
+                if (h > 0) return `${h}h ${m}m`;
+                return `${m}m ${s}s`;
+            }
+            // Already formatted like "1:02:34"
+            return dur;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // ===================================================================
+        // On load: check if queue has items and show panel if so
+        // ===================================================================
+        (async function checkQueue() {
+            try {
+                const resp = await fetch('/queue/status');
+                const items = await resp.json();
+                if (items.length > 0) showQueuePanel();
+            } catch {}
+        })();
     </script>
 </body>
 </html>
