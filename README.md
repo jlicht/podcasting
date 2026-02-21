@@ -26,9 +26,13 @@ If you already have the project set up and just want to run the app:
    ```
    ANTHROPIC_API_KEY=sk-ant-your-real-key-here
    ```
-2. **Double-click** `Start Podcast Transcriber.command`. A Terminal window will open, the server will start, and your browser will open to the app automatically.
-3. **First launch only** — macOS may block the file. Right-click it and choose **Open**, then click **Open** in the dialog.
-4. **Stop the server** — Close the Terminal window.
+2. **(Optional) Set a default podcast feed** — Add a `DEFAULT_FEED_URL` line to your `.env` file so episodes load automatically when the app starts:
+   ```
+   DEFAULT_FEED_URL=https://feeds.example.com/your-podcast
+   ```
+3. **Double-click** `Start Podcast Transcriber.command`. A Terminal window will open, the server will start, and your browser will open to the app automatically.
+4. **First launch only** — macOS may block the file. Right-click it and choose **Open**, then click **Open** in the dialog.
+5. **Stop the server** — Close the Terminal window.
 
 > **Tip:** Drag `Start Podcast Transcriber.command` to your Dock for quick access.
 

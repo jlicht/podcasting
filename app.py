@@ -437,6 +437,13 @@ async def fetch_feed(url: str = Form(...)):
     })
 
 
+@app.get("/config")
+async def get_config():
+    return JSONResponse({
+        "default_feed_url": os.environ.get("DEFAULT_FEED_URL", ""),
+    })
+
+
 class QueueRequest(BaseModel):
     episodes: list[dict]
     model_size: str = "base"

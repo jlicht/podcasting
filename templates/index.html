@@ -1284,6 +1284,24 @@
                 if (items.length > 0) showQueuePanel();
             } catch {}
         })();
+
+        // Auto-load default feed if configured
+        (async function loadDefaultFeed() {
+            try {
+                const resp = await fetch('/config');
+                const config = await resp.json();
+                if (config.default_feed_url) {
+                    document.getElementById('feed-url').value = config.default_feed_url;
+                    // Switch to Feed tab
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.querySelector('[data-tab="feed"]').classList.add('active');
+                    document.getElementById('tab-feed').classList.add('active');
+                    // Trigger feed load
+                    document.getElementById('feed-form').dispatchEvent(new Event('submit'));
+                }
+            } catch {}
+        })();
     </script>
 </body>
 </html>
